@@ -58,5 +58,5 @@ class Book(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "author": self.author.serialize()
+            "author": self.author.serialize() if self.author != None else "Unknown"
         }

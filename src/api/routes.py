@@ -38,3 +38,35 @@ def get_all_books():
     serialized_books = [ item.serialize() for item in book_list ]
 
     return jsonify(serialized_books), 200
+
+@api.route('/books/<int:id>', methods=['GET'])
+def get_one_book(id):
+
+    searched_book = Book.query.get(id) # None (Solo por id)
+
+    if searched_book != None:
+        return jsonify(searched_book.serialize()), 200
+    
+    return jsonify({"error": "Book not found 🥲"}), 404
+
+@api.route('/books', methods=['POST'])
+def add_new_book():
+
+    try:
+
+        body = request.json
+
+        new_book = Book()
+
+        new_book.title = body.get('title')
+
+        db.session.add(new_book) # Memoria RAM del server
+
+        db.session.commit() # asigna el id a ese libro y lo guarda SQL
+        
+        return jsonify(new_book.serialize()), 200
+    
+    except ValueError:
+        
+        return jsonify({"error": "Sorry something unexpected happened. 🧟"}), 500
+         
