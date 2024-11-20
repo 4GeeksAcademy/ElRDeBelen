@@ -51,6 +51,10 @@ class Book(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     author = db.relationship("Author", back_populates='books')
 
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+        
     def __repr__(self):
         return f'<Book {self.id}>'
 
