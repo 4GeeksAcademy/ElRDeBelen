@@ -46,6 +46,42 @@ def get_all_authors():
     serialized_authors = [ item.serialize() for item in authors ]
     return jsonify(serialized_authors), 200
 
+
+@api.route('/authors/<int:id>', methods=['GET'])
+def get_one_author(id):
+
+    searched_author = Author.query.get(id)
+    
+    if searched_author != None:
+        return jsonify(searched_author.serialize()), 200
+    
+    return jsonify({"error": "Author not found 🥲"}), 404
+    
+@api.route('/authors', methods=['POST'])
+def add_new_author():
+
+    try:
+        body = request.json
+        name = body.get('name')
+
+        if not name:
+            return jsonify({"error": "The 'name' field is required 🦹🏻‍♂️"}), 400
+
+        new_author = Author()
+
+        new_author.name = name
+        
+        db.session.add(new_author)
+        db.session.commit()
+
+        return jsonify(new_author.serialize()), 200
+
+    except ValueError as e:
+        return jsonify({"error": f"Invalid JSON data: {str(e)}"}), 400
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return jsonify({"error": "An error occurred while processing your request."}), 500
+
 @api.route('/books/<int:id>', methods=['GET'])
 def get_one_book(id):
 
