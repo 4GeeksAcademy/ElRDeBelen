@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, Book, Author
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token
 
 api = Blueprint('api', __name__)
 
@@ -173,4 +174,24 @@ def edit_book(book_id):
         # Return a generic error message to the user
         return jsonify({"error": "An error occurred while processing your request."}), 500
 
+
+@api.route('/login', methods=['POST'])
+def login():
+    body = request.json
+    email = body.get('email')
+    password = body.get('password')
+
+    if email == None or password == None:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    user = User.query.filter_by(email=email, password=password).first()
+
+    if user is None or password != user.password:
+        return jsonify({"error": "Invalid email or password"}), 401
     
+    access_token = create_access_token(identity=user.email)
+
+    return jsonify({
+        "user": user.serialize(),
+        "token": access_token
+    }), 200
