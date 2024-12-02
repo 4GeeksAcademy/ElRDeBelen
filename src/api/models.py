@@ -36,7 +36,8 @@ class Author(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name
+            "name": self.name,
+            
         }
 
 class Book(db.Model):
@@ -50,11 +51,13 @@ class Book(db.Model):
     # author = Es probable otra table
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     author = db.relationship("Author", back_populates='books')
+    image_url = db.Column(db.String(480), nullable=True)
 
-    def __init__(self, title, author):
+    def __init__(self, title, author, image_url):
         self.title = title
         self.author = author
-        
+        self.image_url = image_url
+
     def __repr__(self):
         return f'<Book {self.id}>'
 
@@ -62,5 +65,6 @@ class Book(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "author": self.author.serialize() if self.author != None else "Unknown"
+            "author": self.author.serialize() if self.author != None else "Unknown",
+            "image_url": self.image_url
         }

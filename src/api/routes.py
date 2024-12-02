@@ -7,10 +7,26 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token
 
+import os
+import json
+
+import cloudinary
+import cloudinary.uploader
+from cloudinary.utils import cloudinary_url
+
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
+
+
+# Configuration       
+cloudinary.config( 
+    cloud_name = "dd0wschpy", 
+    api_key = "278174897546864", 
+    api_secret = os.getenv("CLOUDINARY_SECRET", ""), # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
 
 
 @api.route('/hello', methods=['POST', 'GET'])
@@ -98,9 +114,8 @@ def add_new_book():
 
     try:
 
-        body = request.json
-        title = body.get('title')
-        author_id = body.get('author_id')
+        title = request.form.get('title')
+        author_id = request.form.get('author_id')
 
         if author_id == None:
             return jsonify({ "error" : "falta el campo author_id 🦹🏻‍♂️"}), 400
@@ -112,8 +127,17 @@ def add_new_book():
                 "error" : f"El author con author_id {author_id} no se encuentra registrado 🦹🏻‍♂️"
             }), 404
 
+        upload_result = None
+        file = request.files.get('file')
+        if file:
+            upload_result = cloudinary.uploader.upload(file)
 
-        new_book = Book(title=title, author=searched_author)
+        else:
+            return jsonify({ 
+                "error" : f"Not file attached 🦹🏻‍♂️"
+            }), 404
+        
+        new_book = Book(title=title, author=searched_author, image_url=upload_result["secure_url"])
 
         db.session.add(new_book) # Memoria RAM del server
 
